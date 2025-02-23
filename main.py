@@ -4,22 +4,6 @@ import numpy as np
 from tensorflow.keras.preprocessing import image
 from PIL import Image, UnidentifiedImageError
 import os
-from tensorflow.keras.utils import get_custom_objects
-from tensorflow.keras.layers import Layer
-
-
-# Custom layer registration if needed
-class Cast(Layer):
-    def __init__(self, dtype, **kwargs):
-        super(Cast, self).__init__(**kwargs)
-        self.dtype = dtype
-
-    def call(self, inputs):
-        return tf.cast(inputs, self.dtype)
-
-
-# Register the custom Cast layer if it's used in the model
-get_custom_objects().update({'Cast': Cast})
 
 def set_background():
     st.markdown(
@@ -64,15 +48,10 @@ set_background()
 # Load model safely
 MODEL_PATH = "mobilenetv2_finetuned_model.h5"
 
-# Handle model loading errors
-try:
-    if not os.path.exists(MODEL_PATH):
-        st.error("Model file not found! Check the file path.")
-    else:
-        # Load the model with custom layers
-        loaded_model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'Cast': Cast})
-except Exception as e:
-    st.error(f"Error loading model: {str(e)}")
+if not os.path.exists(MODEL_PATH):
+    st.error("Model file not found! Check the file path.")
+else:
+    loaded_model = tf.keras.models.load_model(MODEL_PATH)
 
 st.title('Hat Image Classification')
 
@@ -96,26 +75,23 @@ if ImagePath is not None:
             test_image = np.array(loaded_single_image) / 255.0  # Normalize
             test_image = np.expand_dims(test_image, axis=0)  # Add batch dimension
 
-            try:
-                # Model prediction
-                logits = loaded_model.predict(test_image)
-                softmax = tf.nn.softmax(logits)
-                predict_output = tf.argmax(logits, -1).numpy()[0]
+            # Model prediction
+            logits = loaded_model.predict(test_image)
+            softmax = tf.nn.softmax(logits)
+            predict_output = tf.argmax(logits, -1).numpy()[0]
 
-                # CIFAR-10 class labels
-                classes = [
+            # CIFAR-10 class labels
+            classes = [
                     "Ascot Cap", "Baseball Cap", "Beret", "Bicorne", "Boater", "Bowler", "Deerstalker",
                     "Fedora", "Fez", "Football Helmet", "Garrison Cap", "Hard Hat", "Military Helmet",
                     "Mortarboard", "Pith Helmet", "Pork Pie", "Sombrero", "Southwester", "Top Hat", "Zucchetto"
                 ]
-                predicted_class = classes[predict_output]
-                probability = softmax.numpy()[0][predict_output] * 100
+            predicted_class = classes[predict_output]
+            probability = softmax.numpy()[0][predict_output] * 100
 
-                # Display result
-                st.header(f"Prediction: {predicted_class}")
-                st.subheader(f"Probability: {probability:.2f}%")
-            except Exception as e:
-                st.error(f"Prediction error: {str(e)}")
+            # Display result
+            st.header(f"Prediction: {predicted_class}")
+            st.subheader(f"Probability: {probability:.2f}%")
 
     except UnidentifiedImageError:
         st.error('Invalid image format! Please upload a valid JPEG, JPG, or PNG file.')
