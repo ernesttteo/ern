@@ -47,8 +47,8 @@ set_background()
 
 # Load model safely
 MODEL_PATH = "mobilenetv2_finetuned_model.h5"
- 
-if not MODEL_PATH:
+
+if not os.path.exists(MODEL_PATH):
     st.error("Model file not found! Check the file path.")
 else:
     loaded_model = tf.keras.models.load_model(MODEL_PATH)
@@ -82,10 +82,27 @@ if ImagePath is not None:
 
             # CIFAR-10 class labels
             classes = [
-                    "Ascot Cap", "Baseball Cap", "Beret", "Bicorne", "Boater", "Bowler", "Deerstalker",
-                    "Fedora", "Fez", "Football Helmet", "Garrison Cap", "Hard Hat", "Military Helmet",
-                    "Mortarboard", "Pith Helmet", "Pork Pie", "Sombrero", "Southwester", "Top Hat", "Zucchetto"
-                ]
+    "Ascot Cap",
+    "Baseball Cap",
+    "Beret",
+    "Bicorne",
+    "Boater",
+    "Bowler",
+    "Deerstalker",
+    "Fedora",
+    "Fez",
+    "Football Helmet",
+    "Garrison Cap",
+    "Hard Hat",
+    "Military Helmet",
+    "Mortarboard",
+    "Pith Helmet",
+    "Pork Pie",
+    "Sombrero",
+    "Southwester",
+    "Top Hat",
+    "Zucchetto"
+]
             predicted_class = classes[predict_output]
             probability = softmax.numpy()[0][predict_output] * 100
 
