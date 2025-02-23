@@ -53,7 +53,7 @@ if not os.path.exists(MODEL_PATH):
 else:
     loaded_model = tf.keras.models.load_model(MODEL_PATH)
 
-st.title('CIFAR-10 Categories Classification')
+st.title('Hat Image Classification')
 
 # Image upload options
 genre = st.radio("How You Want To Upload Your Image", ('Browse Photos', 'Camera'))
