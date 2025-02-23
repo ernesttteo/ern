@@ -1,60 +1,114 @@
 import streamlit as st
-from tensorflow.keras.models import Sequential, model_from_json
+import tensorflow as tf
 import numpy as np
 from tensorflow.keras.preprocessing import image
-from PIL import UnidentifiedImageError
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
+import os
 
+def set_background():
+    st.markdown(
+        """
+        <style>
+        .stApp {
+            background: url("https://img.freepik.com/free-photo/fedora-hat-studio-with-copy-space_23-2150737081.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+        /* Remove overlay if not needed */
+        /* .stApp::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2); 
+            z-index: -1;
+        } */
+        
+        /* Make all text black */
+        h1, h2, h3, h4, h5, h6, p, .stMarkdown, .stTextInput label, .stFileUploader label {
+            color: black !important;
+        }
 
-json_file = open('_flower.json', 'r')
-loaded_model_json = json_file.read()
-json_file.close()
-loaded_model = model_from_json(loaded_model_json)
+        /* Ensure buttons and inputs are visible */
+        .stButton>button {
+            background-color: #fff !important;
+            color: black !important;
+            border: 1px solid black !important;
+        }
 
-loaded_model.load_weights("_flower.h5")
-# print("Loaded model from disk")
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-st.title('Flower Classification Using CNN')
+# Set background image
+set_background()
 
-class_name = ['Daisy', 'Dandelion', 'Rose', 'Sunflower', 'Tulip']
+# Load model safely
+MODEL_PATH = 'mobilenetv2_finetuned_model.h5'
 
-genre = st.radio(
-    "How You Want To Upload Your Image",
-    ('Browse Photos', 'Camera'))
+if not os.path.exists(MODEL_PATH):
+    st.error("Model file not found! Check the file path.")
+else:
+    loaded_model = tf.keras.models.load_model(MODEL_PATH)
+
+st.title('CIFAR-10 Categories Classification')
+
+# Image upload options
+genre = st.radio("How You Want To Upload Your Image", ('Browse Photos', 'Camera'))
 
 if genre == 'Camera':
     ImagePath = st.camera_input("Take a picture")
 else:
-    ImagePath = st.file_uploader("Choose a file")
-
-# ImagePath = st.file_uploader("Choose a file")
+    ImagePath = st.file_uploader("Choose a file", type=['jpeg', 'jpg', 'png'])
 
 if ImagePath is not None:
-
     try:
+        # Open image with PIL
         image_ = Image.open(ImagePath)
+        st.image(image_, width=250, caption="Uploaded Image")
 
-        st.image(image_, width=250)
+        # Process and predict when button is clicked
+        if st.button('Predict'):
+            loaded_single_image = image_.resize((224, 224))  # Resize for model input
+            test_image = np.array(loaded_single_image) / 255.0  # Normalize
+            test_image = np.expand_dims(test_image, axis=0)  # Add batch dimension
+
+            # Model prediction
+            logits = loaded_model.predict(test_image)
+            softmax = tf.nn.softmax(logits)
+            predict_output = tf.argmax(logits, -1).numpy()[0]
+
+            # CIFAR-10 class labels
+            classes = [
+    "Ascot Cap",
+    "Baseball Cap",
+    "Beret",
+    "Bicorne",
+    "Boater",
+    "Bowler",
+    "Deerstalker",
+    "Fedora",
+    "Fez",
+    "Football Helmet",
+    "Garrison Cap",
+    "Hard Hat",
+    "Military Helmet",
+    "Mortarboard",
+    "Pith Helmet",
+    "Pork Pie",
+    "Sombrero",
+    "Southwester",
+    "Top Hat",
+    "Zucchetto"
+]
+            predicted_class = classes[predict_output]
+            probability = softmax.numpy()[0][predict_output] * 100
+
+            # Display result
+            st.header(f"Prediction: {predicted_class}")
+            st.subheader(f"Probability: {probability:.2f}%")
 
     except UnidentifiedImageError:
-        st.write('Input Valid File Format !!!  [ jpeg, jpg, png only this format is supported ! ]')
-
-
-try:
-    if st.button('Predict'):
-        test_image = image.load_img(ImagePath, target_size=(256, 256))
-        test_image = image.img_to_array(test_image)
-
-        test_image = np.expand_dims(test_image, axis=0)
-
-        result = loaded_model.predict(test_image, verbose=0)
-
-        type_ = class_name[np.argmax(result)]
-        st.header('Prediction is: ' + type_)
-        st.header('Confidence is: ' + str(round(np.max(result), 4) * 100) + ' %')
-
-except TypeError:
-    st.header('Please Upload Your File !!!')
-
-except UnidentifiedImageError:
-    st.header('Input Valid File !!!')
+        st.error('Invalid image format! Please upload a valid JPEG, JPG, or PNG file.')
