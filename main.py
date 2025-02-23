@@ -82,27 +82,10 @@ if ImagePath is not None:
 
             # CIFAR-10 class labels
             classes = [
-    "Ascot Cap",
-    "Baseball Cap",
-    "Beret",
-    "Bicorne",
-    "Boater",
-    "Bowler",
-    "Deerstalker",
-    "Fedora",
-    "Fez",
-    "Football Helmet",
-    "Garrison Cap",
-    "Hard Hat",
-    "Military Helmet",
-    "Mortarboard",
-    "Pith Helmet",
-    "Pork Pie",
-    "Sombrero",
-    "Southwester",
-    "Top Hat",
-    "Zucchetto"
-]
+                    "Ascot Cap", "Baseball Cap", "Beret", "Bicorne", "Boater", "Bowler", "Deerstalker",
+                    "Fedora", "Fez", "Football Helmet", "Garrison Cap", "Hard Hat", "Military Helmet",
+                    "Mortarboard", "Pith Helmet", "Pork Pie", "Sombrero", "Southwester", "Top Hat", "Zucchetto"
+                ]
             predicted_class = classes[predict_output]
             probability = softmax.numpy()[0][predict_output] * 100
 
