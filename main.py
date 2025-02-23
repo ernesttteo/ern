@@ -4,6 +4,22 @@ import numpy as np
 from tensorflow.keras.preprocessing import image
 from PIL import Image, UnidentifiedImageError
 import os
+from tensorflow.keras.utils import get_custom_objects
+from tensorflow.keras.layers import Layer
+
+
+# Custom layer registration if needed
+class Cast(Layer):
+    def __init__(self, dtype, **kwargs):
+        super(Cast, self).__init__(**kwargs)
+        self.dtype = dtype
+
+    def call(self, inputs):
+        return tf.cast(inputs, self.dtype)
+
+
+# Register the custom Cast layer if it's used in the model
+get_custom_objects().update({'Cast': Cast})
 
 def set_background():
     st.markdown(
@@ -53,7 +69,8 @@ try:
     if not os.path.exists(MODEL_PATH):
         st.error("Model file not found! Check the file path.")
     else:
-        loaded_model = tf.keras.models.load_model(MODEL_PATH)
+        # Load the model with custom layers
+        loaded_model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'Cast': Cast})
 except Exception as e:
     st.error(f"Error loading model: {str(e)}")
 
