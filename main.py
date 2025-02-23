@@ -48,7 +48,7 @@ set_background()
 # Load model safely
 MODEL_PATH = "mobilenetv2_finetuned_model.h5"
  
-if not os.path.exists(MODEL_PATH):
+if not MODEL_PATH:
     st.error("Model file not found! Check the file path.")
 else:
     loaded_model = tf.keras.models.load_model(MODEL_PATH)
