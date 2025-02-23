@@ -46,7 +46,7 @@ def set_background():
 set_background()
 
 # Load model safely
-MODEL_PATH = 'mobilenetv2_finetuned_model.h5'
+MODEL_PATH = "mobilenetv2_finetuned_model.h5"
 
 if not os.path.exists(MODEL_PATH):
     st.error("Model file not found! Check the file path.")
